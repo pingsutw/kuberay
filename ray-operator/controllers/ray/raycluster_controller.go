@@ -637,7 +637,7 @@ func (r *RayClusterReconciler) createHeadPod(instance rayiov1alpha1.RayCluster) 
 		Namespace: pod.Namespace,
 	}
 
-	r.Log.Info("createHeadPod", "head pod with name", pod.GenerateName)
+	r.Log.Info("createHeadPod", "head pod with name", pod.Name)
 	if err := r.Create(context.TODO(), &pod); err != nil {
 		if errors.IsAlreadyExists(err) {
 			fetchedPod := corev1.Pod{}
@@ -681,14 +681,14 @@ func (r *RayClusterReconciler) createWorkerPod(instance rayiov1alpha1.RayCluster
 			return err
 		}
 	}
-	r.Log.Info("Created pod", "Pod ", pod.GenerateName)
+	r.Log.Info("Created pod", "Pod ", pod.Name)
 	r.Recorder.Eventf(&instance, corev1.EventTypeNormal, "Created", "Created worker pod %s", pod.Name)
 	return nil
 }
 
 // Build head instance pod(s).
 func (r *RayClusterReconciler) buildHeadPod(instance rayiov1alpha1.RayCluster) corev1.Pod {
-	podName := strings.ToLower(instance.Name + common.DashSymbol + string(rayiov1alpha1.HeadNode) + common.DashSymbol)
+	podName := strings.ToLower(instance.Name + common.DashSymbol + string(rayiov1alpha1.HeadNode))
 	podName = utils.CheckName(podName) // making sure the name is valid
 	svcName := utils.GenerateServiceName(instance.Name)
 	// The Ray head port used by workers to connect to the cluster (GCS server port for Ray >= 1.11.0, Redis port for older Ray.)
@@ -706,9 +706,10 @@ func (r *RayClusterReconciler) buildHeadPod(instance rayiov1alpha1.RayCluster) c
 
 // Build worker instance pods.
 func (r *RayClusterReconciler) buildWorkerPod(instance rayiov1alpha1.RayCluster, worker rayiov1alpha1.WorkerGroupSpec) corev1.Pod {
-	podName := strings.ToLower(instance.Name + common.DashSymbol + string(rayiov1alpha1.WorkerNode) + common.DashSymbol + worker.GroupName + common.DashSymbol)
+	podName := strings.ToLower(instance.Name + common.DashSymbol + string(rayiov1alpha1.WorkerNode) + common.DashSymbol + worker.GroupName)
 	podName = utils.CheckName(podName) // making sure the name is valid
 	svcName := utils.GenerateServiceName(instance.Name)
+	svcName = utils.CheckName(svcName)
 	// The Ray head port used by workers to connect to the cluster (GCS server port for Ray >= 1.11.0, Redis port for older Ray.)
 	headPort := common.GetHeadPort(instance.Spec.HeadGroupSpec.RayStartParams)
 	autoscalingEnabled := instance.Spec.EnableInTreeAutoscaling

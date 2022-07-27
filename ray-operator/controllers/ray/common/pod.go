@@ -90,7 +90,7 @@ func DefaultHeadPodTemplate(instance rayiov1alpha1.RayCluster, headSpec rayiov1a
 	// headPort is passed into setMissingRayStartParams but unused there for the head pod.
 	// To mitigate this awkwardness and reduce code redundancy, unify head and worker pod configuration logic.
 	podTemplate := headSpec.Template
-	podTemplate.GenerateName = podName
+	podTemplate.Name = podName
 	if podTemplate.ObjectMeta.Namespace == "" {
 		podTemplate.ObjectMeta.Namespace = instance.Namespace
 		log.Info("Setting pod namespaces", "namespace", instance.Namespace)
